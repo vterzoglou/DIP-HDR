@@ -1,14 +1,14 @@
 
 function responseCurve = estimateResponseCurve(imgStack,exposureTimes,smoothingLamda,weightingFcn,resize_factor,Zmin,Zmax)
-    %imgstack:MxNxnumimgs
+    % imgstack: [M x N x numimgs]
     M = size(imgStack,1);
     N = size(imgStack,2);
     numimgs = length(exposureTimes);
     
     B = log(exposureTimes);
     
-    %Resize images and convert subscripts for spatial dimensions to a
-    %linear index
+    % Resize images and convert subscripts for spatial dimensions to a
+    % linear index
     newM = ceil(M*resize_factor);
     newN = ceil(N*resize_factor);
     newQ = zeros(newM*newN, numimgs);
@@ -18,8 +18,8 @@ function responseCurve = estimateResponseCurve(imgStack,exposureTimes,smoothingL
   
     
     zvals = 0:255;
-    %flag is passed to gsolve to notify if photon weighting is used, in
-    %order to make some changes...
+    % flag is passed to gsolve to notify if photon weighting is used, in
+    % order to make some changes...
     flag = 0;
     switch weightingFcn
         case 1
@@ -32,8 +32,9 @@ function responseCurve = estimateResponseCurve(imgStack,exposureTimes,smoothingL
             W = exposureTimes;
             flag = 1;
     end
-    %Set W values to Z outside of the interval [Zmin,Zmax]
+    % Set W values to zero, for Z outside of the interval [Zmin,Zmax]
     W([1:Zmin+1,Zmax+1:256]) = 0;
+    % Use gsolve to compute G(Z)
     [responseCurve,~] = gsolve(newQ,B,smoothingLamda,W,flag);
 
 end

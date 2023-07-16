@@ -1,30 +1,30 @@
 clc
 close all
 clear all
-
-%fix rotated image based on img #6
+%%
+% Fix rotated image based on img #6
 img1 = imread('sample2-06.jpg');
 img2 = imread('sample2-05_rotated.jpg');
 
-%grayscale images from original ones
+% Grayscale images from original ones
 img1g = im2double(rgb2gray(img1));
 img2g = im2double(rgb2gray(img2));
 
-%detect salient points
+% Detect salient points
 points1 = detectSURFFeatures(img1g,'MetricThreshold',750,'NumOctaves',3,'NumScaleLevels',5);
 points2 = detectSURFFeatures(img2g,'MetricThreshold',750,'NumOctaves',3,'NumScaleLevels',5);
 
-%feature extraction and matching
+% Feature extraction and matching
 [feat1,vp1] = extractFeatures(img1g,points1,'Upright',false);
 [feat2,vp2] = extractFeatures(img2g,points2,'Upright',false);
 idxp = matchFeatures(feat1,feat2,'MatchThreshold',10.5422,'MaxRatio',0.1054);
 mp1 = vp1(idxp(:,1),:);
 mp2 = vp2(idxp(:,2),:);
 
-%estimate transformation
+% Estimate transformation
 tform = estimateGeometricTransform(mp2,mp1,'affine');
 
-%output recovered image
+% Display  and save recovered image
 outputView = imref2d(size(img1));
 Ir = imwarp(img2,tform,'OutputView',outputView);
 figure
@@ -33,8 +33,8 @@ title('Recovered Image');
 
 imwrite(Ir,'sample2-05.jpg');
 
-
-%%%Repeat demo3 algorithm...
+%%
+% Repeat demo3 algorithm...
 
 weightfun_used = 2;
 exposuretimes =  [1/400, 1/250, 1/100, 1/40, 1/25, 1/8, 1/3];
@@ -57,14 +57,14 @@ end
 calibrated = zeros(size(Q));
 radiancemap = zeros(M,N,chans);
 
-%estimate response curve for each channel separately
+% Estimate response curve for each channel separately
 lamda = 100;
 Zmin = round(0.05*255);
 Zmax = round(0.99*255);
 for c = 1:chans
     responseCurve(:,c) = estimateResponseCurve(Q(:,:,c,:),exposuretimes,lamda,weightfun_used,resize_factor,Zmin,Zmax);
 
-    %repeat mergeLDRstack routine in a (slightly...) more compact and suitable way 
+    % Repeat mergeLDRstack routine in a (slightly...) more compact and suitable way 
     imgStack = squeeze(Q(:,:,c,:));
     WZ = zeros(M,N,K);
     
@@ -81,7 +81,7 @@ for c = 1:chans
     radiancemap(:,:,c) = rescale(sum((WZ.*(G-T)),3)./sum(WZ,3));
 end
 
-%use tone mapping and output the final image
+% Use tone mapping, display and save the final image
 output_img = toneMapping(radiancemap,0.8);
 
 figure();
