@@ -1,20 +1,21 @@
-%demo2 is supposed to be run after demo1, so the variable maps will
-%probably have been calculated.
-%If for whatever reason this is not the case, maps is calculated repeating
-%most steps from demo1.
+% demo2 is supposed to be run after demo1, so the variable maps will
+% probably have been calculated.
+% If for whatever reason this is not the case, maps is calculated repeating
+% most steps from demo1.
 
 clearvars -except maps
 clc
 close all
 
-%if variable maps not existing
+%% 
+%If variable maps not existing
 if( exist('maps','var') == 0)
-    %if the maps file exists load from there
+    % If the maps file exists load from there
     if( exist('maps','file') == 2)
         data = load('maps.mat');
         maps = data.maps;
         clearvars -except maps
-    %else repeat demo1 steps to calculate maps
+    % Else repeat demo1 steps to calculate maps
     else
         numimgs = 16;
         numfun = 4;
@@ -38,23 +39,24 @@ if( exist('maps','var') == 0)
         clearvars -except maps
     end
 end
-
-%points on palette to check for
+%%
+% x,y_check correspond to some points on the calibration palette to check
 y_check = [235,290,345,400,445,510];
 x_check = 1330*ones(size(y_check));
 
 namefun = {"Uniform","Tent","Gaussian","Photon"};
+% Gamma correction parameter
 g = 1.1;
 
-%output images
+% Apply tone mapping
 hdr_images = toneMapping(maps,g);
 for i = 1:size(namefun,2)
-    %show toned image
+    % Show toned image
     figure("windowstate","maximized");
     imagesc(hdr_images(:,:,:,i));
     title({"After gamma correction, using $\gamma$ = "+num2str(g)+" and "+namefun{i}+" weighting"},"interpreter","latex");
     
-    %show brightness curve on palette pixels
+    % Show brightness curve on palette pixels
     figure();
     for j = 1:length(y_check)
         plot(j,rgb2gray(hdr_images(y_check(j),x_check(j),:,i)),'x');

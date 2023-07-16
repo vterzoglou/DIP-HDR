@@ -1,10 +1,11 @@
 clc
 clear all
 close all
+%%
 
-%Tent weighting is used, according to the paper by Debevec et al.
-%Uniform (=1), Gaussian(=3) or Photon(=3) weighting may also be used,
-%however the results are not that good in these cases.
+% Tent weighting is used, according to the paper by Debevec et al.
+% Uniform (=1), Gaussian(=3) or Photon(=3) weighting may also be used,
+% however the results are not that good in these cases.
 weightfun_used = 2;
 namefun = {"Uniform","Tent","Gaussian","Photon"};
 namechan = {"Red","Green","Blue"};
@@ -26,9 +27,12 @@ Zmin = round(0.05*255);
 Zmax = round(0.99*255);
 lamdas = [300,100];
 gammas = [1,0.8];
+
+%%
+
 for set = 1:numsets
     
-    %%parse set images into Q matrix
+    % Read first image from set to get some parameters (sizes, channels)
     if(set==1)
         im1 = imread(sprintf('%s%s%s','exposure',num2str(1),'.jpg'));
     else
@@ -38,7 +42,11 @@ for set = 1:numsets
     N = size(im1,2);
     K = length(exposuretimes{set});
     chans = size(im1,3);
-
+    %%
+    
+    % Parse image set into Q matrix. 
+    % Images are assumed to be directly accessible, either being in the 
+    % same folder, or in PATH.
     Q = zeros(M,N,chans,numimgs(set),'like',im1);
     Q(:,:,:,1) = im1;
     if (set == 1)
@@ -50,20 +58,20 @@ for set = 1:numsets
             Q(:,:,:,i) = imread(Image2_names{i});
         end
     end
-    
-    
+    %%
+    % Initialize radiance map 
     radiancemap = zeros(M,N,chans);
-    %%estimate response curve for each channel separately
     
+    % Estimate response curve for each channel separately
     figure("windowstate","maximized");
     for c = 1:chans
-        %Stack of images of the same channel
+        % Stack of images of the same channel
         imgStack = double(squeeze(Q(:,:,c,:)));
         
-        %estimate G(Z) for the current channel of the image set
+        % Estimate G(Z) for the current channel of the image set
         responseCurve(:,c,set) = estimateResponseCurve(Q(:,:,c,:),exposuretimes{set},lamdas(set),weightfun_used,resize_factor(set),Zmin,Zmax);
         
-        %plot response function
+        % Plot response function
         subplot(2,2,c);
         mat = imgStack(imgStack<=Zmax & imgStack>=Zmin);
         [MM,NN,KK] = size(mat);
@@ -77,8 +85,8 @@ for set = 1:numsets
         ylabel("pixel value $Z$","Interpreter","Latex");
         xlabel("log exposure $X$","Interpreter","Latex");
 
-        
-%         %repeat mergeLDRstack routine in a (slightly...) more compact and suitable way       
+        %%
+        % Repeat mergeLDRstack routine in a (slightly...) more compact and suitable way       
         WZ = zeros(M,N,K);
         [r,cc,v] =ind2sub(size(imgStack), find(imgStack<=Zmax & imgStack>=Zmin));
         switch weightfun_used
@@ -112,7 +120,7 @@ for set = 1:numsets
         
     end
     
-    %plot for the response curves for each channel in the same axes
+    % Plot for the response curves for each channel in the same axes
     subplot(2,2,4);
     plot(responseCurve(Zmin+1:Zmax+1,1,set),Zmin:Zmax,'r');
     hold on
@@ -125,13 +133,13 @@ for set = 1:numsets
             ["for the all chanels on the same axes for the image set \#"+num2str(set)]
             },"interpreter","latex");   
     
-    %put the resulting radiance map in a cell matrix
+    % Put the resulting radiance map in a cell matrix
     radiancemaps_cell{set} = radiancemap;
-    %use tone mapping
+    % Use tone mapping
     output_imgs{set} = toneMapping(radiancemap,gammas(set));
     if(set == 1)  
         
-        %check palette pixels for the 1st set
+        % Check palette pixels for the 1st image
         y_check = [235,290,345,400,445,510];
         x_check = 1330*ones(size(y_check));
         
@@ -147,7 +155,7 @@ for set = 1:numsets
             },"interpreter","latex");
     end
     
-    %output the final image
+    % Display and save the final image
     figure();
     imshow(output_imgs{set});
     title("HDR image created from imageset \#"+num2str(set),"interpreter","latex");
