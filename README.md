@@ -1,6 +1,7 @@
 # DIP-HDR
-Implementation of HDR Image Project was carried out for the course of Digitial Image Processing in Aristotle University of Thessaloniki\
-(Dept. of Electrical and Computer Engineering) based on the paper "Recovering high dynamic range radiance maps from photographs",\
+Implementation of HDR Image Project was carried out for the course of Digitial Image Processing in Aristotle University of Thessaloniki
+(Dept. of Electrical and Computer Engineering).\
+It is based on the paper "Recovering high dynamic range radiance maps from photographs",
 by Paul E. Debevec and Jitendra Malik, written in 2008, which can be found [here][paper]
 
 The purpose of this project is to construct an HDR mapping of a set of images of the same scene, under different exposures.\
